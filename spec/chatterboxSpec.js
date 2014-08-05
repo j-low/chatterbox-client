@@ -15,7 +15,7 @@ describe('chatterbox', function() {
 
     before(function() {
       ajaxSpy = sinon.stub($, 'ajax');
-      app.init();
+      // app.init();
     });
 
     beforeEach(function() {
@@ -119,7 +119,7 @@ describe('chatterbox', function() {
 
         app.init();
 
-        $('#send .submit').trigger('submit');
+        $('.submitter').trigger('submit');
         expect(app.handleSubmit.calledOnce).to.be.true;
 
         app.handleSubmit.restore();

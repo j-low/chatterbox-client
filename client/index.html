@@ -16,18 +16,18 @@
     <div id="main">
       <h1>chatterbox</h1>
       <!-- Your HTML goes here! -->
-    </div>
-    <form>
-      Write new message:<input class="message_text" type = "text" name="new_message"/><br/>
-      <input class="submit" type="submit", value= "Submit"/>
+    <form class="submitter">
+      Write new message:<input id="message" class="message_box" type ="text" name="new_message"/><br/>
+      <input type="submit", value= "Submit"/>
     </form>
-      <select>
+      <select id="roomSelect">
       </select>
     <div id="chats">
 
     </div>
     <div class="chatrooms">
 
+    </div>
     </div>
     <script>
       app.init();

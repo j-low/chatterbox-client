@@ -5,6 +5,10 @@ body {
     font-family: arial, sans-serif;
 }
 
+.friend {
+    font-weight: bold;
+}
+
 #main {
     width: 500px;
     margin: auto;

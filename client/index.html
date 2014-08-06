@@ -15,20 +15,25 @@
   <body>
     <div id="main">
       <h1>chatterbox</h1>
-      <!-- Your HTML goes here! -->
-    <form class="submitter">
-      Write new message:<input id="message" class="message_box" type ="text" name="new_message"/><br/>
-      <input type="submit", value= "Submit"/>
-    </form>
+
+      <div id="chatContainer">
+      </div>
+
+      <form id="sendMessage">Write new message:
+        <input id="messageBox" type ="text"/><br/>
+        <input type="submit", value="Send Message"/>
+      </form>
+
       <select id="roomSelect">
+        <option value="lobby">Lobby</option>
       </select>
-    <div id="chats">
 
+      <form id="roomCreate">
+        <input id="generateNewRoom" type="text"/><br/>
+        <input type="submit", value="Create Room"/>
+      </form>
     </div>
-    <div class="chatrooms">
 
-    </div>
-    </div>
     <script>
       app.init();
     </script>

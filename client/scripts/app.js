@@ -1,7 +1,3 @@
-// App Object - wrap all functionality within an app object
-// Init function
-
-// Create APP object to hold all variables and methods to be utilized by Chatterbox app
 var app = {
   server : 'https://api.parse.com/1/classes/chatterbox',
   friends : {},
@@ -9,49 +5,39 @@ var app = {
   rooms : {}
 };
 
+//initialize app
 app.init = function() {
-
-// Event listener functions:
   $(document).ready(function() {
+  //Cache DOM elements
+  $chatContainer = $('#chatContainer');
+  $sendMessage = $('#sendMessage');
+  $messageBox = $('#messageBox');
+  $roomSelect = $('#roomSelect');
+  $roomCreate = $('#roomCreate');
+  $generateNewRoom = $('#generateNewRoom');
+
+  // Event listener functions:
     // Add friend upon username click
-    $('#chats').on('click', '.username', app.addFriend);
-    // Send a message upon clicking submit
-    $('.submitter').on('submit', app.handleSubmit);
+    $chatContainer.on('click', '.username', app.addFriend);
+    // Send a message upon clicking submit (Send Message button)
+    $sendMessage.on('submit', app.handleSubmit);
+    //Set currentRoom upon selecting from dropdown
+    $roomSelect.on('change', app.setRoom);
+    // Add room upon clicking submit (Add Room button)
+    $roomCreate.on('submit', app.addRoom);
 
+    // Get/store username and room upon page load
+    window.user = prompt("Please enter your username: ") || "anonymous";
+    // default to lobby
+    window.room = app.currentRoom;
 
+    app.fetch();
 
-
-// Create INIT function to initialize Chatterbox functionality upon page load
-  // Get/store username and room upon page load
-  window.user = prompt("Please enter your username: ") || "anonymous";
-  // default to lobby
-  window.room = app.currentRoom;
+    setInterval(app.fetch, 10000);
   });
 };
 
-app.handleSubmit = function(event) {
-  event.preventDefault();
-  console.log("TRIGGERED");
-  // create message object to be passed into Parse
-  var username = "temp";
-  var text = $('.message_box').val();
-  var roomname = "tempRoom";
-  var msgObj = {
-    'username':username,
-    'text':text,
-    'roomname':roomname
-  };
-
-  // set the message box back to empty after storing the value
-  $('.message_box').val('');
-
-  // send the message to Parse
-  app.send(msgObj);
-
-  // refresh the chatroom window
-  app.fetch();
-};
-
+//fetch new messages from server
 app.fetch = function() {
   $.ajax({
     url: app.server,
@@ -67,17 +53,10 @@ app.fetch = function() {
       _.each(temp, function(message) {
         app.rooms[message.roomname] = message.roomname;
         app.addMessage(message);
-        console.log(message);
       });
 
-      //set event listener for 'addFriend' click on new DOM elements
-      // $('.username').on('click', function(event) {
-      // console.log(event);
-      //   var user = $(this).attr('id');
-      //   app.addFriend(user);
-      // });
       for (roomname in app.rooms) {
-        $("select").append('<option value="' + roomname + '">' + roomname + '</option>');
+        $roomSelect.append('<option value="' + roomname + '">' + roomname + '</option>');
       }
     },
     error: function(message) {
@@ -86,16 +65,15 @@ app.fetch = function() {
   });
 };
 
+//post new message to server from user
 app.send = function(message) {
   $.ajax({
-    // always use this url
     url: app.server,
     type: 'POST',
     data: JSON.stringify(message),
     contentType: 'application/json',
 
     success: function(message) {
-      console.log(message);
     },
     error: function(message) {
       console.log("Message failed to send.");
@@ -103,70 +81,76 @@ app.send = function(message) {
   });
 };
 
+//add message to $chatContainer
 app.addMessage = function(response) {
   if(typeof response.username === "string" && typeof response.text === "string") {
-    // test for <script> tag
     if (response.text.match(/[<>]/g)) {
       var message = "ILLEGAL MESSAGE";
     } else {
       var message = '<span class="username" id="' + response.username + '">' + response.username + "</span>" + ": " + response.text;
     }
 
-    //TODO: add friend class to clicked friends
+    //Make bold if user === friend
     if (response.username in app.friends) {
       message = "<b>" + message + "</b>";
     }
 
     // add messages for specific room if dropdown is not "lobby"
     if (app.currentRoom === "lobby" || response.roomname === app.currentRoom) {
-      $("#chats").append('<p>' + message + '</p>');
+      $("#chatContainer").append('<p>' + message + '</p>');
     }
   }
 };
 
+//clear chat window
 app.clearMessages = function() {
-  $('#chats').empty();
+  $chatContainer.empty();
 };
-
-// Escaping: What to avoid in user input
-// < >
 
 // addFriend method
 app.addFriend = function(event) {
-  // return string of username
   var user = event.target.id;
   app.friends[user] = user;
-  // event.target.addClass('friend');
 };
 
-/*TODO: move to top  KEEP DON'T DELETE
-  $(document).ready(function() {
-    $('select').on('change', function() {
-      // event.preventDefault();
-      // var selectedRoom = $(this).val();
-      // console.log(selectedRoom);
-      // app.currentRoom = selectedRoom;
-      // $(app.currentRoom).attr('id', 'roomSelect');
-      // app.fetch();
-    });
-    // app.clearMessages();
-    // var filteredChats =
-  });
-*/
+//set currentRoom
+app.setRoom = function(event) {
+  event.preventDefault();
+  var selectedRoom = $(this).val();
+  app.currentRoom = selectedRoom;
+  $(app.currentRoom).attr('id', 'roomSelect');
+  app.fetch();
+};
 
-
-app.addRoom = function(roomname) {
-  $('#roomSelect').append('<option val="' +
+//add room to 'select' dropdown
+app.addRoom = function(event) {
+  event.preventDefault();
+  var roomname = $generateNewRoom.val();
+  $roomSelect.append('<option value="' +
                            roomname +
                            '">' +
                            roomname +
                            '</option>');
-
-  // var roomSelect = $(this).val();
-  // $(this).attr('id', roomSelect);
-  // app.currentRoom = roomSelect;
-  // app.fetch();
+  $generateNewRoom.val('');
 };
 
-// on fetch, refresh list of chat rooms and populate into an object
-// for each value in object, add to the drop-down list
+//handle submit event on $sendMessage
+app.handleSubmit = function(event) {
+  event.preventDefault();
+  // create message object to be passed into Parse
+  var username = "temp";
+  var text = $messageBox.val();
+  var roomname = "tempRoom";
+  var msgObj = {
+    'username':username,
+    'text':text,
+    'roomname':roomname
+  };
+  // set the message box back to empty after storing the value
+  $messageBox.val('');
+  // send the message to Parse
+  app.send(msgObj);
+  // refresh the chatroom window
+  app.fetch();
+};
+

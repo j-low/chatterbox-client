@@ -9,6 +9,10 @@ body {
     font-weight: bold;
 }
 
+#chatContainer {
+    height: 350px;
+}
+
 #main {
     width: 500px;
     margin: auto;
